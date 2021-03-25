@@ -14,7 +14,7 @@
     <!-- <div id="canvas"></div> -->
     <canvas id="canvas" width="100" height="100"></canvas>
     <script>
-        //这样写会很慢,因为会操作DOM
+        // 这样写会很慢,因为会操作DOM
         // canvas.onmousemove = (e) =>{
         //     //console调试大法
         //     console.log(e.clientY)
@@ -37,27 +37,56 @@
         canvas.height = document.documentElement.clientHeight
         //画线
             let ctx = canvas.getContext("2d")
-            let painting = false
             ctx.fillStyle = 'black'
             ctx.strokeStyle = 'none'
-            canvas.onmousedown = () => {
-                painting = true
+            ctx.lineWidth = 8
+            ctx.lineCap = 'round'
+            let painting = false
+            let last
+            function drawLine(x1,y1,x2,y2){
+                ctx.beginPath()
+                ctx.moveTo(x1,y1)
+                ctx.lineTo(x2,y2)
+                ctx.stroke()
             }
-            canvas.onmousemove = (e) => {
-                if(painting === true){
-                    // 直线
-                    // ctx.fillRect(e.clientX - 5,e.clientY - 5,10,10)
-                    // 圆弧
+            // 是否支持触屏
+            let isTouchDevice = 'ontouchstart' in document.documentElement
+            if(isTouchDevice){
+                canvas.ontouchstart = (e) => {
+                    last = [e.touches[0].clientX, e.touches[0].clientY]
+                }
+                canvas.ontouchmove = (e) =>{
                     ctx.beginPath()
-                    ctx.arc(e.clientX, e.clientY, 10, 0, 2 * Math.PI)
+                    // ctx.arc(e.touches[0].clientX, e.touches[0].clientY, 10, 0, 2 * Math.PI)
+                    drawLine(last[0],last[1],e.touches[0].clientX,e.touches[0].clientY)
+                    last = [e.touches[0].clientX, e.touches[0].clientY]
                     ctx.stroke()
                     ctx.fill()
-                }else{
-
                 }
-            }
-            canvas.onmouseup = () => {
-                painting = false
+            }else{
+                canvas.onmousedown = (e) => {
+                    painting = true
+                    last = [e.clientX, e.clientY]
+                }
+                canvas.onmousemove = (e) => {
+                    if(painting === true){
+                        // 直线
+                        // ctx.fillRect(e.clientX - 5,e.clientY - 5,10,10)
+                        // 圆弧
+                        // ctx.beginPath()
+                        // ctx.arc(e.clientX, e.clientY, 10, 0, 2 * Math.PI)
+                        // ctx.stroke()
+                        // ctx.fill()
+                        // 连线
+                        drawLine(last[0],last[1],e.clientX,e.clientY)
+                        last = [e.clientX, e.clientY]
+                    }else{
+                        console.log('什么也没做')
+                    }
+                }
+                canvas.onmouseup = () => {
+                    painting = false
+                }
             }
     </script>
 </body>
